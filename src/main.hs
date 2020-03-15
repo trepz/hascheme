@@ -40,8 +40,8 @@ parseAtom = do
                          _    -> Atom atom
 
 
-parseNumber'' :: Parser LispVal
-parseNumber'' = liftM (Number . read) $ many1 digit
+parseNumber :: Parser LispVal
+parseNumber = liftM (Number . read) $ many1 digit
 
 
 -- Ex 1.1 With do notation
@@ -52,8 +52,8 @@ parseNumber' = do
 
 
 -- Ex 1.2 With explicit sequencing
-parseNumber :: Parser LispVal
-parseNumber = many1 digit >>= (\x -> return $ (Number . read) x)
+parseNumber'' :: Parser LispVal
+parseNumber'' = many1 digit >>= (\x -> return $ (Number . read) x)
 
 
 parseExpr :: Parser LispVal
