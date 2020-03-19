@@ -24,7 +24,7 @@ spaces = skipMany1 space
 parseString :: Parser LispVal
 parseString = do
                 char '"'
-                x <- many (noneOf "\"")
+                x <- many (noneOf "\"" <|> (char '\\' >> oneOf "\"nrt\\"))
                 char '"'
                 return $ String x
 
