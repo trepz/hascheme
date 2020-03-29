@@ -2,6 +2,7 @@ module Main where
 import Control.Monad
 import System.Environment
 import Text.ParserCombinators.Parsec hiding (spaces)
+import Numeric
 
 
 data LispVal = Atom String
@@ -40,15 +41,18 @@ parseAtom = do
                          _    -> Atom atom
 
 
-parseNumber :: Parser LispVal
-parseNumber = liftM (Number . read) $ many1 digit
+parseNumber' :: Parser LispVal
+parseNumber' = liftM (Number . read) $ many1 digit
 
 
 -- Ex 1.1 With do notation
-parseNumber' :: Parser LispVal
-parseNumber' = do
-                x <- many1 digit
-                return $ (Number . read) x
+parseNumber :: Parser LispVal
+parseNumber = do
+                first <- digit <|> (char '#' >> oneOf "h")
+                rest <- many1 (digit <|> oneOf ['a'..'f'])
+                return $ case first of
+                           'h' -> Number . fst . head . readHex $ rest
+                           _   -> Number . read $ first : rest
 
 
 -- Ex 1.2 With explicit sequencing
@@ -57,9 +61,9 @@ parseNumber'' = many1 digit >>= (\x -> return $ (Number . read) x)
 
 
 parseExpr :: Parser LispVal
-parseExpr = parseAtom
-         <|> parseString
+parseExpr = parseString
          <|> parseNumber
+         <|> parseAtom
 
 
 readExpr :: String -> String
