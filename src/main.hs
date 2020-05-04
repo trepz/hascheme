@@ -5,13 +5,14 @@ import Text.ParserCombinators.Parsec hiding (spaces)
 import Numeric
 
 
-data LispVal = Atom String
-             | List [LispVal]
-             | DottedList [LispVal] LispVal
-             | Number Integer
-             | String String
-             | Bool Bool
-             deriving (Show)
+data LispVal
+  = Atom String
+  | List [LispVal]
+  | DottedList [LispVal] LispVal
+  | Number Integer
+  | String String
+  | Bool Bool
+  deriving (Show)
 
 
 symbol :: Parser Char
@@ -24,46 +25,34 @@ spaces = skipMany1 space
 
 parseString :: Parser LispVal
 parseString = do
-                char '"'
-                x <- many (noneOf "\"" <|> (char '\\' >> oneOf "\"nrt\\"))
-                char '"'
-                return $ String x
+  char '"'
+  x <- many (noneOf "\"" <|> (char '\\' >> oneOf "\"nrt\\"))
+  char '"'
+  return $ String x
 
 
 parseAtom :: Parser LispVal
 parseAtom = do 
-              first <- letter <|> symbol
-              rest <- many (letter <|> digit <|> symbol)
-              let atom = first:rest
-              return $ case atom of 
-                         "#t" -> Bool True
-                         "#f" -> Bool False
-                         _    -> Atom atom
+  first <- letter <|> symbol
+  rest <- many (letter <|> digit <|> symbol)
+  let atom = first:rest
+  return $ case atom of 
+    "#t" -> Bool True
+    "#f" -> Bool False
+    _    -> Atom atom
 
 
-parseNumber' :: Parser LispVal
-parseNumber' = liftM (Number . read) $ many1 digit
-
-
--- Ex 1.1 With do notation
 parseNumber :: Parser LispVal
 parseNumber = do
-                first <- digit <|> (char '#' >> oneOf "h")
-                rest <- many1 (digit <|> oneOf ['a'..'f'])
-                return $ case first of
-                           'h' -> Number . fst . head . readHex $ rest
-                           _   -> Number . read $ first : rest
-
-
--- Ex 1.2 With explicit sequencing
-parseNumber'' :: Parser LispVal
-parseNumber'' = many1 digit >>= (\x -> return $ (Number . read) x)
+  first <- digit <|> (char '#' >> oneOf "h")
+  rest <- many1 (digit <|> oneOf ['a'..'f'])
+  return $ case first of
+    'h' -> Number . fst . head . readHex $ rest
+    _   -> Number . read $ first : rest
 
 
 parseExpr :: Parser LispVal
-parseExpr = parseString
-         <|> parseNumber
-         <|> parseAtom
+parseExpr = parseString <|> parseNumber <|> parseAtom
 
 
 readExpr :: String -> String
@@ -74,5 +63,5 @@ readExpr input = case parse parseExpr "lisp" input of
 
 main :: IO ()
 main = do 
-         (expr:_) <- getArgs
-         putStrLn $ readExpr expr
+  (expr:_) <- getArgs
+  putStrLn $ readExpr expr
